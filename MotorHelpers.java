@@ -39,8 +39,8 @@ public class MotorHelpers {
         public static class ConfigGetter extends SparkMaxConfig {
             private static ConfigGetter instance = new ConfigGetter();
 
-            public static void getDetail(SparkMaxConfig config, SparkParameter param) {
-                instance.getParameter(config, param.value);
+            public static Object getDetail(BaseConfig config, SparkParameter param) {
+                return instance.getParameter(config, param.value);
             }
         }
     }
