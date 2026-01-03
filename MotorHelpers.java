@@ -37,10 +37,10 @@ public class MotorHelpers {
                     this.inverted = (boolean) ConfigGetter.getDetail(config, SparkParameter.kFollowerModeIsInverted, false);
                 } else {
                     this.inverted = (boolean) ConfigGetter.getDetail(config, SparkParameter.kInverted, false);
+                    this.p = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kP_0);
+                    this.i = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kI_0);
+                    this.d = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kD_0);
                 }
-                this.p = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kP_0);
-                this.i = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kI_0);
-                this.d = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kD_0);
                 
                 return error;
             }
