@@ -3,6 +3,7 @@
 package com.spartronics4915.frc2025.util;
 
 import com.revrobotics.REVLibError;
+import com.revrobotics.config.BaseConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
@@ -12,18 +13,32 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 public class MotorHelpers {
     public class Rev {
         public static class LoggedSparkMax extends SparkMax implements Sendable {
-            LoggedMotor logger = new LoggedMotor();
-            SparkMaxConfig config;
+            private SparkMaxConfig config;
+            private int canID;
+            private String motorType;
+            private double p;
+            private double i;
+            private double d;
+            private int followingID = -1;
 
             public LoggedSparkMax(int deviceId, MotorType motorType) {
                 super(deviceId, motorType);
-                logger.setCanID(deviceId);
-                logger.setMotorType("SparkMax-" + (motorType == MotorType.kBrushless ? "Brushless" : "Brushed"));
+                this.canID = deviceId;
+                this.motorType = "SparkMax-" + (motorType == MotorType.kBrushless ? "Brushless" : "Brushed");
             }
 
             public REVLibError configure(SparkMaxConfig config, ResetMode resetMode, PersistMode persistMode) {
                 this.config = config;
-                return super.configure(config, resetMode, persistMode);
+                REVLibError error = super.configure(config, resetMode, persistMode);
+
+                if (this.isFollower()) {
+                    this.followingID = (int) ConfigGetter.getDetail(config, SparkParameter.kFollowerModeLeaderId);
+                }
+                this.p = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kP_0);
+                this.i = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kI_0);
+                this.d = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kD_0);
+                
+                return error;
             }
 
             public SparkMaxConfig getConfig() {
@@ -32,7 +47,17 @@ public class MotorHelpers {
 
             @Override
             public void initSendable(SendableBuilder builder) {
-                logger.initSendable(builder);
+                builder.setActuator(true);
+                builder.setSmartDashboardType("ProfiledPIDController");
+                builder.publishConstInteger("CanID", canID);
+                builder.publishConstString("MotorType", motorType);
+                if (followingID != -1) {
+                    builder.publishConstInteger("Following Motor CAN ID ", followingID);
+                } else {
+                    builder.addDoubleProperty("P", () -> p, null);
+                    builder.addDoubleProperty("I", () -> i, null);
+                    builder.addDoubleProperty("D", () -> d, null);
+                }
             }
         }
 
@@ -50,27 +75,6 @@ public class MotorHelpers {
                 }
                 return ((Number) obj).doubleValue();
             }
-        }
-    }
-
-    public static class LoggedMotor implements Sendable {
-        private int canID;
-        private String motorType;
-
-        @Override
-        public void initSendable(SendableBuilder builder) {
-            builder.setActuator(true);
-            builder.setSmartDashboardType("ProfiledPIDController");
-            builder.publishConstInteger("CanID", canID);
-            builder.publishConstString("MotorType", motorType);
-        }
-
-        public void setCanID(int canID) {
-            this.canID = canID;
-        }
-
-        public void setMotorType(String motorType) {
-            this.motorType = motorType;
         }
     }
 
