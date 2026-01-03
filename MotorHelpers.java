@@ -42,6 +42,14 @@ public class MotorHelpers {
             public static Object getDetail(BaseConfig config, SparkParameter param) {
                 return instance.getParameter(config, param.value);
             }
+
+            public static double getDoubleDetail(BaseConfig config, SparkParameter param) {
+                Object obj = instance.getParameter(config, param.value);
+                if (obj == null) {
+                    return 0.0;
+                }
+                return ((Number) obj).doubleValue();
+            }
         }
     }
 
