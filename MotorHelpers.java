@@ -32,7 +32,7 @@ public class MotorHelpers {
                 REVLibError error = super.configure(config, resetMode, persistMode);
 
                 if (this.isFollower()) {
-                    this.followingID = (int) ConfigGetter.getDetail(config, SparkParameter.kFollowerModeLeaderId);
+                    this.followingID = (int) ConfigGetter.getDetail(config, SparkParameter.kFollowerModeLeaderId, -1);
                 }
                 this.p = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kP_0);
                 this.i = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kI_0);
@@ -64,16 +64,16 @@ public class MotorHelpers {
         public static class ConfigGetter extends SparkMaxConfig {
             private static ConfigGetter instance = new ConfigGetter();
 
-            public static Object getDetail(BaseConfig config, SparkParameter param) {
-                return instance.getParameter(config, param.value);
+            public static Object getDetail(BaseConfig config, SparkParameter param, Object defaultObject) {
+                Object obj = instance.getParameter(config, param.value);
+                if (obj == null) {
+                    return defaultObject;
+                }
+                return obj;
             }
 
             public static double getDoubleDetail(BaseConfig config, SparkParameter param) {
-                Object obj = instance.getParameter(config, param.value);
-                if (obj == null) {
-                    return 0.0;
-                }
-                return ((Number) obj).doubleValue();
+                return ((Number) getDetail(config, param, 0.0)).doubleValue();
             }
         }
     }
