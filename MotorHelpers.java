@@ -20,6 +20,7 @@ public class MotorHelpers {
             private double i;
             private double d;
             private int followingID = -1;
+            private boolean inverted;
 
             public LoggedSparkMax(int deviceId, MotorType motorType) {
                 super(deviceId, motorType);
@@ -33,6 +34,9 @@ public class MotorHelpers {
 
                 if (this.isFollower()) {
                     this.followingID = (int) ConfigGetter.getDetail(config, SparkParameter.kFollowerModeLeaderId, -1);
+                    this.inverted = (boolean) ConfigGetter.getDetail(config, SparkParameter.kFollowerModeIsInverted, false);
+                } else {
+                    this.inverted = (boolean) ConfigGetter.getDetail(config, SparkParameter.kInverted, false);
                 }
                 this.p = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kP_0);
                 this.i = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kI_0);
@@ -58,6 +62,7 @@ public class MotorHelpers {
                     builder.addDoubleProperty("I", () -> i, null);
                     builder.addDoubleProperty("D", () -> d, null);
                 }
+                builder.addBooleanProperty("Inverted", () -> inverted, null);
             }
         }
 
