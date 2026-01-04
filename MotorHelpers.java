@@ -25,6 +25,7 @@ public class MotorHelpers {
             private double smartCurrentLimit; 
             private double secondaryCurrentLimit;
             private boolean brakeMode;
+            private double rampRate;
 
             public LoggedSparkMax(int deviceId, MotorType motorType) {
                 super(deviceId, motorType);
@@ -48,6 +49,7 @@ public class MotorHelpers {
                 this.smartCurrentLimit = ConfigGetter.getDoubleDetail(config, SparkParameter.kSmartCurrentStallLimit);
                 this.secondaryCurrentLimit = ConfigGetter.getDoubleDetail(config, SparkParameter.kCurrentChop);
                 this.brakeMode = (int) ConfigGetter.getDetail(config, SparkParameter.kIdleMode, 0) == 1;
+                this.rampRate = 1 / ConfigGetter.getDoubleDetail(config, SparkParameter.kRampRate);
                 
                 return error;
             }
@@ -73,6 +75,7 @@ public class MotorHelpers {
                 builder.addDoubleProperty("Smart Current Limit", () -> smartCurrentLimit, null);
                 builder.addDoubleProperty("Secondary Current Limit", () -> secondaryCurrentLimit, null);
                 builder.addBooleanProperty("Brake Mode", () -> brakeMode, null);
+                builder.addDoubleProperty("Ramp Rate", () -> rampRate, null);
             }
         }
 
