@@ -82,6 +82,13 @@ public class MotorHelpers {
                 builder.addDoubleProperty("Ramp Rate", () -> rampRate, null);
                 builder.addDoubleProperty("Position Conversion Factor", () -> positionConversionFactor, null);
                 builder.addDoubleProperty("Velocity Conversion Factor", () -> velocityConversionFactor, null);
+
+                // General logging (that can't be changed since it's just data)
+                builder.addDoubleProperty("Applied Output", () -> this.getAppliedOutput(), null);
+                builder.addDoubleProperty("Voltage", () -> this.getBusVoltage(), null);
+                builder.addDoubleProperty("Amp usage", () -> this.getOutputCurrent(), null);
+                builder.addDoubleProperty("Position", () -> this.getEncoder().getPosition(), null);
+                builder.addDoubleProperty("Velocity", () -> this.getEncoder().getVelocity(), null);
             }
         }
 
