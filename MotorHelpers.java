@@ -26,6 +26,8 @@ public class MotorHelpers {
             private double secondaryCurrentLimit;
             private boolean brakeMode;
             private double rampRate;
+            private double positionConversionFactor;
+            private double velocityConversionFactor;
 
             public LoggedSparkMax(int deviceId, MotorType motorType) {
                 super(deviceId, motorType);
@@ -45,6 +47,8 @@ public class MotorHelpers {
                     this.p = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kP_0);
                     this.i = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kI_0);
                     this.d = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kD_0);
+                    this.positionConversionFactor = ConfigGetter.getDoubleDetail(config.encoder, SparkParameter.kPositionConversionFactor);
+                    this.velocityConversionFactor = ConfigGetter.getDoubleDetail(config.encoder, SparkParameter.kVelocityConversionFactor);
                 }
                 this.smartCurrentLimit = ConfigGetter.getDoubleDetail(config, SparkParameter.kSmartCurrentStallLimit);
                 this.secondaryCurrentLimit = ConfigGetter.getDoubleDetail(config, SparkParameter.kCurrentChop);
@@ -76,6 +80,8 @@ public class MotorHelpers {
                 builder.addDoubleProperty("Secondary Current Limit", () -> secondaryCurrentLimit, null);
                 builder.addBooleanProperty("Brake Mode", () -> brakeMode, null);
                 builder.addDoubleProperty("Ramp Rate", () -> rampRate, null);
+                builder.addDoubleProperty("Position Conversion Factor", () -> positionConversionFactor, null);
+                builder.addDoubleProperty("Velocity Conversion Factor", () -> velocityConversionFactor, null);
             }
         }
 
