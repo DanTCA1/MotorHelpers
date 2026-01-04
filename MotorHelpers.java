@@ -21,6 +21,9 @@ public class MotorHelpers {
             private double d;
             private int followingID = -1;
             private boolean inverted;
+            // Smart current limit is stored as an integer in rev software, but we use double for consistency
+            private double smartCurrentLimit; 
+            private double secondaryCurrentLimit;
 
             public LoggedSparkMax(int deviceId, MotorType motorType) {
                 super(deviceId, motorType);
@@ -41,6 +44,8 @@ public class MotorHelpers {
                     this.i = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kI_0);
                     this.d = ConfigGetter.getDoubleDetail(config.closedLoop, SparkParameter.kD_0);
                 }
+                this.smartCurrentLimit = ConfigGetter.getDoubleDetail(config, SparkParameter.kSmartCurrentStallLimit);
+                this.secondaryCurrentLimit = ConfigGetter.getDoubleDetail(config, SparkParameter.kCurrentChop);
                 
                 return error;
             }
@@ -63,6 +68,8 @@ public class MotorHelpers {
                     builder.addDoubleProperty("D", () -> d, null);
                 }
                 builder.addBooleanProperty("Inverted", () -> inverted, null);
+                builder.addDoubleProperty("Smart Current Limit", () -> smartCurrentLimit, null);
+                builder.addDoubleProperty("Secondary Current Limit", () -> secondaryCurrentLimit, null);
             }
         }
 
