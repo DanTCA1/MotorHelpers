@@ -2,11 +2,21 @@
 
 package com.spartronics4915.frc2025.util;
 
+import java.util.function.DoubleConsumer;
+import java.util.function.DoubleSupplier;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import javax.swing.SpringLayout.Constraints;
+
 import com.revrobotics.REVLibError;
 import com.revrobotics.config.BaseConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.spartronics4915.frc2025.util.MotorHelpers.SparkParameter;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 
@@ -28,6 +38,11 @@ public class MotorHelpers {
             private double rampRate;
             private double positionConversionFactor;
             private double velocityConversionFactor;
+            private LoggedTrapezoidProfile profile;
+            private double maxVelocity;
+            private double maxAcceleration;
+            private DoubleSupplier getSetpoint;
+            private DoubleConsumer setSetpoint;
 
             public LoggedSparkMax(int deviceId, MotorType motorType) {
                 super(deviceId, motorType);
@@ -62,6 +77,21 @@ public class MotorHelpers {
                 return config;
             }
 
+            public void addProfile(LoggedTrapezoidProfile profile) {
+                this.profile = profile;
+                maxVelocity = profile.constraints.maxVelocity;
+                maxAcceleration = profile.constraints.maxAcceleration;
+            }
+
+            public LoggedTrapezoidProfile getProfile() {
+                return profile;
+            }
+
+            public void addSetpoint(DoubleSupplier getSetpoint, DoubleConsumer setSetpoint) {
+                this.getSetpoint = getSetpoint;
+                this.setSetpoint = setSetpoint;
+            }
+
             @Override
             public void initSendable(SendableBuilder builder) {
                 builder.setActuator(true);
@@ -71,9 +101,20 @@ public class MotorHelpers {
                 if (followingID != -1) {
                     builder.publishConstInteger("Following Motor CAN ID ", followingID);
                 } else {
-                    builder.addDoubleProperty("P", () -> p, null);
-                    builder.addDoubleProperty("I", () -> i, null);
-                    builder.addDoubleProperty("D", () -> d, null);
+                    builder.addDoubleProperty("p", () -> p, null);
+                    builder.addDoubleProperty("i", () -> i, null);
+                    builder.addDoubleProperty("d", () -> d, null);
+
+                    if (profile != null) {
+                        builder.addDoubleProperty("Max Velocity", () -> maxVelocity, null);
+                        builder.addDoubleProperty("Max Acceleration", () -> maxAcceleration, null);
+                        builder.addDoubleProperty("Trapezoid Position", () -> profile.lastState.position, null);
+                        builder.addDoubleProperty("Trapezoid Velocity", () -> profile.lastState.velocity, null);
+                    }
+
+                    if (getSetpoint != null && setSetpoint != null) {
+                        builder.addDoubleProperty("goal", getSetpoint, setSetpoint);
+                    }
                 }
                 builder.addBooleanProperty("Inverted", () -> inverted, null);
                 builder.addDoubleProperty("Smart Current Limit", () -> smartCurrentLimit, null);
@@ -106,6 +147,22 @@ public class MotorHelpers {
             public static double getDoubleDetail(BaseConfig config, SparkParameter param) {
                 return ((Number) getDetail(config, param, 0.0)).doubleValue();
             }
+        }
+    }
+
+    public static class LoggedTrapezoidProfile extends TrapezoidProfile{
+        public Constraints constraints;
+        public State lastState = new State();
+
+        public LoggedTrapezoidProfile(TrapezoidProfile.Constraints constraints) {
+            super(constraints);
+            this.constraints = constraints;
+        }
+
+        public State calculate(double t, State current, State goal) {
+            State state = super.calculate(t, current, goal);
+            this.lastState = state;
+            return state;
         }
     }
 
